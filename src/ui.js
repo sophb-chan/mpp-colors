@@ -1,7 +1,55 @@
 const colorsDiv = document.getElementById("colors");
-function renderColors() {
+function renderColors(sort) {
 	colorsDiv.innerHTML = "";
-	for (const [name, rgb] of Object.entries(Color.map)) {
+	const colorMap = Object.entries(Color.map);
+	switch (sort) {
+		default: case 'name':
+			colorMap.sort((a, b) => a[0].localeCompare(b[0]));
+		break;
+
+		case 'brightness-dl':
+			colorMap.sort((a, b) => {
+				const colorA = new Color(a[1].r, a[1].g, a[1].b);
+				const colorB = new Color(b[1].r, b[1].g, b[1].b);
+				const brightnessA = Color.getBrightness(colorA);
+				const brightnessB = Color.getBrightness(colorB);
+				return Math.sign(brightnessA - brightnessB);
+			});
+		break;
+		
+		case 'brightness':
+		case 'brightness-ld':
+			colorMap.sort((a, b) => {
+				const colorA = new Color(a[1].r, a[1].g, a[1].b);
+				const colorB = new Color(b[1].r, b[1].g, b[1].b);
+				const brightnessA = Color.getBrightness(colorA);
+				const brightnessB = Color.getBrightness(colorB);
+				return Math.sign(brightnessB - brightnessA);
+			});
+		break;
+
+		case 'hue':
+			colorMap.sort((a, b) => {
+				const colorA = new Color(a[1].r, a[1].g, a[1].b);
+				const colorB = new Color(b[1].r, b[1].g, b[1].b);
+				const hueA = Color.getHue(colorA);
+				const hueB = Color.getHue(colorB);
+				return Math.sign(hueA - hueB);
+			});
+		break;
+		case 'hue-biased':
+			colorMap.sort((a, b) => {
+				const colorA = new Color(a[1].r, a[1].g, a[1].b);
+				const colorB = new Color(b[1].r, b[1].g, b[1].b);
+				const hueA = Color.getHue(colorA);
+				const hueB = Color.getHue(colorB);
+				const biasedHueA = hueA + Color.getBrightness(colorA);
+				const biasedHueB = hueB + Color.getBrightness(colorB);
+				return Math.sign(biasedHueA - biasedHueB);
+			});
+		break;
+	}
+	for (const [name, rgb] of colorMap) {
 		const color = new Color(rgb.r, rgb.g, rgb.b);
 		const hex = color.toHexa().toUpperCase();
 		const brightness = Color.getBrightness(color);
@@ -42,13 +90,10 @@ function normalize(text) {
 	const regex = /[a-zA-Z0-9]/;
 	const chars = [...text];
 	const filteredChars = chars.filter((c) => regex.test(c));
-	const normalized = filteredChars.join("").toLowerCase();
+	const normalized = filteredChars.join("").toLowerCase().trim();
 	return normalized;
 }
-const searchInput = document.getElementById("search");
-searchInput.title = 'Type something to search...';
-searchInput.addEventListener("input", (event) => {
-	const query = event.target.value.trim();
+function search(query) {
 	if (!query) {
 		searchInput.title = 'Type something to search...';
 		const colorDivs = [...colorsDiv.children];
@@ -95,4 +140,19 @@ searchInput.addEventListener("input", (event) => {
 			colorsDiv.appendChild(oops);
 		}
 	}
+}
+const searchInput = document.getElementById("search");
+searchInput.title = 'Type something to search...';
+searchInput.addEventListener("input", event => search(event.target.value));
+
+const sortSelect = document.getElementById('sort');
+let lastValue = sortSelect.value;
+sortSelect.addEventListener('change', event => {
+	const selected = event.target.value;
+	if (selected === '!invalid') sortSelect.value = lastValue;
+	else {
+		renderColors(selected);
+		search(searchInput.value);
+	}
+	lastValue = selected;
 });

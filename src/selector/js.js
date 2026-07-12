@@ -1,9 +1,3 @@
-/* testing code
-for (const [name, color] of Object.entries(Color.map)) {
-	console.log(name+':', new Color(color.r, color.g, color.b).toHexa());
-}
-*/
-
 const colorInput = document.getElementById("color-input");
 const colorPreview = document.getElementById("color-preview");
 const colorName = document.getElementById("color-name");

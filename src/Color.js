@@ -83,7 +83,31 @@ class Color {
 		return new Color(hexa).getName();
 	}
 	static getBrightness(color) {
-		return (color.r * 0.299) + (color.g * 0.587) + (color.b * 0.114);
+		return color.r * 0.299 + color.g * 0.587 + color.b * 0.114;
+	}
+	static getHue(color) {
+		const r = color.r;
+		const g = color.g;
+		const b = color.b;
+
+		const max = Math.max(r, g, b);
+		const min = Math.min(r, g, b);
+		const delta = max - min;
+		let hue = 0;
+		// calculate hue based on which channel is dominant
+		if (delta !== 0) {
+			if (max === r)
+				hue = ((g - b) / delta) % 6;
+			else if (max === g)
+				hue = (b - r) / delta + 2;
+			else // if (max === b)
+				hue = (r - g) / delta + 4;
+
+			hue = Math.round(hue * 60);
+			while (hue < 0) hue += 360;
+			hue %= 360;
+		}
+		return hue;
 	}
 }
 if (typeof module !== "undefined") module.exports = Color;
